@@ -1,19 +1,52 @@
 #include<bits/stdc++.h>
 using namespace std;
 
-const int N=1e5;
-int p[N];
-int node[N];
 
-void make(int v){p[v]=v;node[v]=1;}
+class DSU{
+   vector<int> rank, par, size;
+public:
+   DSU(int n){
+       rank.resize(n+1,0);size.resize(n+1,1);
+       par.resize(n+1);
+       for(int i=0;i<=n;i++)par[i]=i;
+   }
 
-int find(int x){return (x==p[x]?x:(p[x]=find(p[x])));}
 
-bool join(int a, int b){
-  a=find(a);b=find(b); 
-  if(a==b)return 0; 
-  if(node[a]<node[b])swap(a,b); 
-  p[a]=b;node[a]+=node[b];
-  return 1;
-}
+   int findPar(int node){
+       if(node==par[node])
+           return node;
+       return par[node] = findPar(par[node]);
+   }
+
+
+   //false if already in same component
+   bool unionByRank(int a, int b){
+       int u = findPar(a);
+       int v = findPar(b);
+       if(u == v)return false;
+
+
+       if(rank[u]<rank[v])
+           par[u] = v;
+       else if(rank[u]>rank[v])
+           par[v] = u;
+       else
+           par[u]=v, rank[v]++;
+       return 1;
+   }
+
+
+   bool unionBySize(int a, int b){
+       int u = findPar(a);
+       int v = findPar(b);
+       if(u == v)return false;
+       if(size[u]<size[v])
+           par[u]=v, size[v]+=size[u];
+       else
+           par[v]=u, size[u]+=size[v];
+       return 1;
+   }
+};
+DSU d(7); d.unionByRank(2,5);
+
 
