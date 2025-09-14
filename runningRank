@@ -1,0 +1,58 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Node {
+    int val;
+    int size;   // size of subtree
+    Node *left, *right;
+    Node(int v) : val(v), size(1), left(nullptr), right(nullptr) {}
+};
+
+class OrderStatisticTree {
+    Node* root = nullptr;
+
+    int getSize(Node* node) {
+        return node ? node->size : 0;
+    }
+
+    Node* insert(Node* node, int val, int &smallerOrEqual) {
+        if (!node) return new Node(val);
+
+        if (val < node->val) {
+            node->left = insert(node->left, val, smallerOrEqual);
+        } else {
+            // all elements in left subtree + this node are <= val
+            smallerOrEqual += getSize(node->left) + 1;
+            node->right = insert(node->right, val, smallerOrEqual);
+        }
+        node->size = 1 + getSize(node->left) + getSize(node->right);
+        return node;
+    }
+
+public:
+    int insertAndGetRank(int val) {
+        int smallerOrEqual = 0;
+        root = insert(root, val, smallerOrEqual);
+        int total = getSize(root);
+        // rank = 1 + number of strictly greater elements
+        return total - smallerOrEqual;
+    }
+};
+
+vector<int> getRanks(vector<int>& arr) {
+    OrderStatisticTree ost;
+    vector<int> res;
+    for (int x : arr) {
+        res.push_back(ost.insertAndGetRank(x));
+    }
+    return res;
+}
+
+int main() {
+    vector<int> stream = {5, 4, 6, 1};
+    vector<int> ranks = getRanks(stream);
+
+    for (int r : ranks) cout << r << " ";
+    cout << endl;
+    return 0;
+}
