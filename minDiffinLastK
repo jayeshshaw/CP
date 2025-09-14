@@ -1,0 +1,56 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+class MinAbsDiffStream {
+    int K;
+    multiset<int> window, diffs;
+    deque<int> dq;
+
+    void addDiff(multiset<int>::iterator it) {
+        if (it == window.end()) return;
+        auto nxt = next(it);
+        if (nxt != window.end()) diffs.insert(*nxt - *it);
+    }
+
+    void removeDiff(multiset<int>::iterator it) {
+        if (it == window.end()) return;
+        auto nxt = next(it);
+        if (nxt != window.end()) diffs.erase(diffs.find(*nxt - *it));
+    }
+
+public:
+    MinAbsDiffStream(int k): K(k) {}
+
+    int add(int x) {
+        dq.push_back(x);
+        auto it = window.insert(x);
+
+        // adjust diffs
+        removeDiff(prev(it, it==window.begin()?0:1));
+        addDiff(prev(it, it==window.begin()?0:1));
+        addDiff(it);
+
+        // pop oldest if >K
+        if ((int)dq.size() > K) {
+            int old = dq.front(); dq.pop_front();
+            auto itOld = window.find(old);
+
+            removeDiff(prev(itOld, itOld==window.begin()?0:1));
+            removeDiff(itOld);
+            addDiff(prev(itOld, itOld==window.begin()?0:1));
+
+            window.erase(itOld);
+        }
+        return diffs.empty() ? -1 : *diffs.begin();
+    }
+};
+
+int main() {
+    vector<int> stream = {5, 4, 6, 1};
+    int K = 3;
+    MinAbsDiffStream solver(K);
+
+    for (int x : stream)
+        cout << solver.add(x) << " ";
+    cout << "\n";
+}
